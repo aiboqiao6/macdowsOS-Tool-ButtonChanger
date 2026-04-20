@@ -12,6 +12,7 @@
 using namespace std;
 
 void buttonchange(HWND hWnd_Window) {
+    SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
     if (hWnd_Window == NULL) {
         exit(0);
     }
@@ -140,9 +141,9 @@ void buttonchange(HWND hWnd_Window) {
 
     }
 }
-
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
-    freopen("log.txt", "w", stdout);
+int main(){
+//int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+   // freopen("log.txt", "w", stdout);
 
     // 1. 读取文件第一行十六进制字符串
     const wchar_t* SAVE_FILE = L"temp.tmp";
@@ -162,6 +163,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     
     MESSAGE_(L"hwnd ", hwnd);
+    //删文件
+    DeleteFileW(L"temp.tmp");
     buttonchange(hwnd);
+
     return 0;
 }
