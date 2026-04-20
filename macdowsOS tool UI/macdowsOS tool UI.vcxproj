@@ -168,8 +168,6 @@
     <Font Include="pingfang0.ttf" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\README-Chinese.md" />
-    <None Include="..\README-English.md" />
     <None Include="..\README.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
