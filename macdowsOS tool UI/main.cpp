@@ -9,18 +9,42 @@
 #include <SFML/System.hpp>
 //
 #include"LogSystem.h"
-using namespace std;
+//
+#include <fstream>
+#include <string>
+#include <filesystem>
 
-void buttonchange(HWND hWnd_Window) {
-    SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+namespace fs = std::filesystem;
+using namespace std;
+void ifelseWindowOn(HWND hWnd_Window) {
+    //检测窗口真实性
+    //若句柄无效则返回
     if (hWnd_Window == NULL) {
         exit(0);
     }
+    // 1. 检测窗口是否存在
+    bool isWindowExists = IsWindow(hWnd_Window);
+    if (!isWindowExists) {
+        exit(0);
+    }
+
+    // 3. 补充：检测是否在任务栏显示（排除工具窗口等）
+    LONG_PTR exStyle_temp = GetWindowLongPtrW(hWnd_Window, GWL_EXSTYLE);
+    bool isShowInTaskbar = !(exStyle_temp & WS_EX_TOOLWINDOW) && // 不是工具窗口
+        (exStyle_temp & WS_EX_APPWINDOW || GetWindow(hWnd_Window, GW_OWNER) == NULL); // 有APPWINDOW样式或无所有者
+    if (!isShowInTaskbar) {
+        exit(0);
+    }
+}
+void buttonchange(HWND hWnd_Window) {
+    SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+
+    ifelseWindowOn(hWnd_Window);
     //抗锯齿
     sf::ContextSettings settings;
     settings.antiAliasingLevel = 10;
-    // 仅改这一行声明，后续所有 window. 操作全局替换为 window.
-    sf::RenderWindow window = sf::RenderWindow(sf::VideoMode({ 200, 70 }), L"macdowsOS Tool test", sf::Style::None, sf::State::Windowed, settings);
+    // 
+    sf::RenderWindow window = sf::RenderWindow(sf::VideoMode({ 250, 70 }), L"macdowsOS Tool test", sf::Style::None, sf::State::Windowed, settings);
 
     //垂直同步
     window.setVerticalSyncEnabled(true);
@@ -61,8 +85,8 @@ void buttonchange(HWND hWnd_Window) {
     op_button_green.setPointCount(10000);
 
     op_button_green.setPosition({ 15, 15 });
-    op_button_yellow.setPosition({ 84, 15 });
-    op_button_red.setPosition({ 154, 15 });
+    op_button_yellow.setPosition({ 110, 15 });
+    op_button_red.setPosition({ 204, 15 });
 
     //back
     sf::CircleShape button1(30);
@@ -71,13 +95,13 @@ void buttonchange(HWND hWnd_Window) {
     button1.setFillColor(sf::Color(64, 64, 64));
     button1.setPointCount(10000);
 
-    sf::RectangleShape button2({ 139.5,60 });
+    sf::RectangleShape button2({ 189.5,60 });
     button2.setPosition({ 30,1 });
     button2.setFillColor(sf::Color(64, 64, 64));
 
     sf::CircleShape button3(30);
     button3.setPointCount(100);
-    button3.setPosition({ 140,1 });
+    button3.setPosition({ 190,1 });
     button3.setFillColor(sf::Color(64, 64, 64));
     button3.setPointCount(10000);
 
@@ -95,9 +119,10 @@ void buttonchange(HWND hWnd_Window) {
     window.display();
 
 
-    RECT windowRect;
-
+    
     int top = 0, right = 0;
+    RECT windowRect;
+    
     /* LPCTSTR changeapp = L"QQ";
      //获取hwnd
      hWnd_Window = FindWindowW(NULL, changeapp);
@@ -108,25 +133,30 @@ void buttonchange(HWND hWnd_Window) {
     bool iftopon = (GetForegroundWindow() == hWnd_Window);
     while (window.isOpen()) {
         //wcout << L"wqddwq" << endl;
-        //获取窗口信息
+        // 
+         //获取窗口信息
         GetWindowRect(hWnd_Window, &windowRect);
 
         top = windowRect.top;
         right = windowRect.right;
-        //位置
-        SetWindowPos(hWnd, hWnd_Window, right - 210, top + 10, 0, 0, SWP_NOSIZE | SWP_NOACTIVATE);
-        SetWindowPos(hWnd_Window, hWnd, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
         wcout << top << " " << right << " " << windowRect.top << " " << windowRect.right << endl;
+        //位置
+        SetWindowPos(hWnd, hWnd_Window, right - 270, top + 10, 0, 0, SWP_NOSIZE | SWP_NOACTIVATE);
+        SetWindowPos(hWnd_Window, hWnd, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+       
         while ((top == windowRect.top && right == windowRect.right)) {
-
+            ifelseWindowOn(hWnd_Window);
             //当窗口激活状态更改时刷新
             if (iftopon != (GetForegroundWindow() == hWnd_Window)) {
+                ///
                 //获取窗口信息
                 GetWindowRect(hWnd_Window, &windowRect);
 
                 top = windowRect.top;
                 right = windowRect.right;
-                SetWindowPos(hWnd, hWnd_Window, right - 210, top + 10, 0, 0, SWP_NOSIZE | SWP_NOACTIVATE);
+                wcout << top << " " << right << " " << windowRect.top << " " << windowRect.right << endl;
+                //位置
+                SetWindowPos(hWnd, hWnd_Window, right - 270, top + 10, 0, 0, SWP_NOSIZE | SWP_NOACTIVATE);
                 SetWindowPos(hWnd_Window, hWnd, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
                 //
                 iftopon = (GetForegroundWindow() == hWnd_Window);
@@ -141,18 +171,19 @@ void buttonchange(HWND hWnd_Window) {
 
     }
 }
-int main(){
-//int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
-   // freopen("log.txt", "w", stdout);
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+//int main() {
+    const fs::path TEMP_DIR = L"temp";
+    const fs::path LINK_FILE = TEMP_DIR / L"link.tmp";
+    const fs::path LINK1_FILE = TEMP_DIR / L"link1.tmp";
 
-    // 1. 读取文件第一行十六进制字符串
-    const wchar_t* SAVE_FILE = L"temp.tmp";
-    std::wifstream file(SAVE_FILE);
+    // 1. 读取 temp/link.tmp 第一行十六进制字符串
+    std::wifstream file(LINK_FILE);
     if (!file.is_open()) return 0;
 
     std::wstring hexStr;
-    if (!std::getline(file, hexStr)) { file.close(); return 0; }
-    file.close();
+    if (!std::getline(file, hexStr)) return 0;
+    file.close(); // 读取完立即关闭
 
     // 2. 十六进制转 HWND
     HWND hwnd = nullptr;
@@ -161,11 +192,18 @@ int main(){
     }
     catch (...) { return 0; }
 
-    
     MESSAGE_(L"hwnd ", hwnd);
-    //删文件
-    DeleteFileW(L"temp.tmp");
+    // 4. 写入 temp/link1.tmp 内容为 "done" 通知主程序
+    {
+        std::wofstream outFile(LINK1_FILE);
+        if (outFile.is_open()) {
+            outFile << L"done" << std::endl;
+        }
+    } // 作用域结束自动关闭文件
+    // 3. 执行核心逻辑
     buttonchange(hwnd);
+
+    
 
     return 0;
 }
